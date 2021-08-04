@@ -1,0 +1,55 @@
+Resources:
+  TestTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${self:custom.testTableName}
+      AttributeDefinitions:
+        - AttributeName: 'PK'
+          AttributeType: 'S'
+        - AttributeName: 'SK'
+          AttributeType: 'S'
+      TimeToLiveSpecification: 
+        AttributeName: TimeToLive
+        Enabled: true
+      KeySchema:
+        - AttributeName: 'PK'
+          KeyType: 'HASH'
+        - AttributeName: 'SK'
+          KeyType: 'RANGE'
+      ProvisionedThroughput:
+        ReadCapacityUnits: ${self:custom.RCU}
+        WriteCapacityUnits: ${self:custom.WCU}
+      GlobalSecondaryIndexes:
+        - IndexName: GSI_1
+          KeySchema:
+            - AttributeName: SK
+              KeyType: 'HASH'
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: ${self:custom.RCU}
+            WriteCapacityUnits: ${self:custom.WCU}
+  TestTableWriteCapacityScalableTarget: 
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    DependsOn: 
+      - TestTable
+    Properties: 
+      MaxCapacity: ${self:custom.maxCapacity}
+      MinCapacity: ${self:custom.minCapacity}
+      ResourceId: table/${self:custom.testTableName}
+      RoleARN: !Sub arn:aws:iam::${AWS::AccountId}:role/aws-service-role/dynamodb.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_DynamoDBTable
+      ScalableDimension: dynamodb:table:WriteCapacityUnits
+      ServiceNamespace: dynamodb
+  TestTableWriteScalingPolicy: 
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: WriteAutoScalingPolicy
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: 
+        Ref: TestTableWriteCapacityScalableTarget
+      TargetTrackingScalingPolicyConfiguration: 
+        TargetValue: 70
+        ScaleInCooldown: 60
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification: 
+          PredefinedMetricType: DynamoDBWriteCapacityUtilization

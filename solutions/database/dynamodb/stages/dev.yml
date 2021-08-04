@@ -1,0 +1,5 @@
+testTableName: ${self:service}-${self:provider.stage}
+RCU: 1
+WCU: 1
+minCapacity: 1
+maxCapacity: 10

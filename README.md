@@ -24,9 +24,10 @@ This is the repository for various AWS solutions built with Serverless Framework
 
     `npm install`
 
-3. Change config in serverless.yml (if needed)
+3. Change config in solutions/common/config.yml (if needed)
     - region
     - service name
+    - runtime
 
 4. Make sure you have awscli installed
     

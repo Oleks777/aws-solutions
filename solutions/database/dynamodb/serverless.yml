@@ -1,4 +1,4 @@
-service: ${file(../../common/config.yml):sevice}-s3
+service: ${file(../../common/config.yml):sevice}-dynamodb
 
 custom: ${file(stages/${self:provider.stage}.yml)}
 
@@ -23,12 +23,12 @@ provider:
     stage: ${self:provider.stage}
 
 resources:
-  - ${file(resources/s3.yml)}
+  - ${file(resources/dynamodb.yml)}
   - Outputs:
-      s3BucketName:
+      dynamodbArn:
         Value:
           Fn::GetAtt:
-            - AwsSolutionsBucket
+            - TestTable
             - Arn
         Export:
           Name: ${self:service}-${self:provider.stage}
