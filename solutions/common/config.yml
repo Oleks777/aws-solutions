@@ -1,0 +1,3 @@
+region: eu-central-1
+sevice: aws-solutions
+runtime: nodejs14.x
