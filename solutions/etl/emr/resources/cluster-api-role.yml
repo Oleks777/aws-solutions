@@ -1,0 +1,41 @@
+Resources:
+  ClusterApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: emr-cluster-mngmt-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: emr-cluster-mngmt
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:CreateLogGroup
+                Resource: 
+                  - !Sub "arn:aws:logs:${self:provider.region}:${AWS::AccountId}:log-group:/aws/lambda/${self:service}-${self:provider.stage}*:*"
+              - Effect: Allow
+                Action:
+                  - logs:PutLogEvents
+                Resource: 
+                  - !Sub "arn:aws:logs:${self:provider.region}:${AWS::AccountId}:log-group:/aws/lambda/${self:service}-${self:provider.stage}*:*:*"
+              - Effect: Allow
+                Action: 
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                Resource: 
+                  - "Fn::GetAtt": [ EMRTable, Arn ]
+                  - !Sub "arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.tableName}/index/*"

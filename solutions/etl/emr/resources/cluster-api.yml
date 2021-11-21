@@ -1,0 +1,66 @@
+createCluster:
+  handler: functions/cluster-api.create
+  memorySize: 128
+  role: ClusterApiRole
+  description: create emr cluster
+  events:
+    - http:
+        path: /emr/cluster/create
+        method: post
+        cors: true
+        private: true
+editCluster:
+  handler: functions/cluster-api.edit
+  memorySize: 128
+  role: ClusterApiRole
+  description: edit emr cluster
+  events:
+    - http:
+        path: /emr/cluster/edit/{clusterId}
+        method: post
+        cors: true
+        private: true
+getCluster:
+  handler: functions/cluster-api.details
+  memorySize: 128
+  role: ClusterApiRole
+  description: get emr cluster details
+  events:
+    - http:
+        path: /emr/cluster/details/{clusterId}
+        method: get
+        cors: true
+        private: true
+deleteCluster:
+  handler: functions/cluster-api.deleteCluster
+  memorySize: 128
+  role: ClusterApiRole
+  description: delete emr cluster
+  events:
+    - http:
+        path: /emr/cluster/delete/{clusterId}
+        method: post
+        cors: true
+        private: true
+listClusters:
+  handler: functions/cluster-api.list
+  memorySize: 128
+  role: ClusterApiRole
+  description: list emr clusters
+  events:
+    - http:
+        path: /emr/cluster/list
+        method: get
+        cors: true
+        private: true
+getClusterInstances:
+  handler: functions/cluster-api.instances
+  memorySize: 128
+  role: ClusterApiRole
+  description: list emr cluster instances
+  events:
+    - http:
+        path: /emr/cluster/instances/{clusterId}
+        method: get
+        cors: true
+        private: true

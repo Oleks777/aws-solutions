@@ -1,0 +1,4 @@
+inputBucketName: ${self:service}-${self:provider.stage}-input
+outputBucketName: ${self:service}-${self:provider.stage}-output
+tableName: ${self:service}-${self:provider.stage}-table
+expirationPolicy: 3

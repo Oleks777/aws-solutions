@@ -1,0 +1,139 @@
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: ${self:custom.VPC_CIDR}
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      Tags:
+        - Key: "Name"
+          Value: !Sub "test-${self:custom.stage}-VPC"
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "test-${self:custom.stage}-IGW"
+
+  VPCGA:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: VPC
+      InternetGatewayId:
+        Ref: InternetGateway
+
+  NatGatewayEIP:
+    Type: AWS::EC2::EIP
+    DependsOn: VPCGA
+    Properties:
+      Domain: vpc
+
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: 
+        Fn::GetAtt: [ NatGatewayEIP, AllocationId]
+      SubnetId: !
+        Ref: SubnetA
+
+  ######################
+  ## Route and RouteTable PUBLIC
+  ######################
+
+  RouteTablePublic:
+    Type: AWS::EC2::RouteTable
+    DependsOn: InternetGateway
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "test-${self:custom.stage}-public-routes"
+ 
+  RoutePublic:
+    Type: AWS::EC2::Route
+    DependsOn: VPCGA
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
+      RouteTableId:
+        Ref: RouteTablePublic
+
+  ######################
+  ## Route and RouteTable Private
+  ######################
+
+  RouteTablePrivate:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "test-${self:custom.stage}-private-routes"
+ 
+  RoutePrivate:
+    Type: AWS::EC2::Route
+    DependsOn: VPCGA
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      RouteTableId:
+        Ref: RouteTablePrivate
+      NatGatewayId: 
+        Ref: NatGateway
+
+  ######################
+  ## Subnet A PUBLIC SUBNET
+  ######################
+
+  SubnetA:
+    Type: AWS::EC2::Subnet
+    DependsOn: 
+      - VPC
+    Properties:
+      VpcId:
+        Ref: VPC
+      AvailabilityZone: ${self:provider.region}a
+      MapPublicIpOnLaunch: true
+      CidrBlock: ${self:custom.SUBNETA_CIDR}
+      Tags:
+        - Key: Name
+          Value: !Sub "test-${self:custom.stage}-public-subnet"
+
+  RouteTableAssociationSubnetA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: RouteTablePublic
+      SubnetId:
+        Ref: SubnetA
+
+  ######################
+  ## Subnet B PRIVATE SUBNET
+  ######################
+
+  SubnetB:
+    Type: AWS::EC2::Subnet
+    DependsOn: 
+     - VPC
+    Properties:
+      VpcId:
+        Ref: VPC
+      AvailabilityZone: ${self:provider.region}b
+      MapPublicIpOnLaunch: false
+      CidrBlock: ${self:custom.SUBNETB_CIDR}
+      Tags:
+        - Key: Name
+          Value: !Sub "test-${self:custom.stage}-private-subnet"
+
+  RouteTableAssociationSubnetB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: RouteTablePrivate
+      SubnetId:
+        Ref: SubnetB

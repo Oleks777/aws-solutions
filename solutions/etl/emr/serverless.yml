@@ -1,0 +1,46 @@
+service: ${file(../../common/config.yml):sevice}-emr
+
+custom: ${file(stages/${self:provider.stage}.yml)}
+
+package:
+  individually: true
+
+projectDir: ../../
+
+provider:
+  name: aws
+  runtime: ${file(../../common/config.yml):runtime}
+  region: ${file(../../common/config.yml):region}
+  stage: ${opt:stage,'dev'}
+  logRetentionInDays: ${file(../../common/config.yml):logRetention}
+  lambdaHashingVersion: 20201221
+  apiGateway:
+    apiKeys:
+        - emrInternalKey${self:provider.stage}
+  deploymentBucket:
+    blockPublicAccess: true
+    serverSideEncryption: AES256
+  stackTags:
+    Service: ${self:service}-${self:provider.stage}
+  environment:
+    stage: ${self:provider.stage}
+
+plugins:
+  - serverless-bundle
+
+functions:
+  - ${file(resources/cluster-api.yml)}
+
+resources:
+  - ${file(resources/s3-input.yml)}
+  - ${file(resources/s3-output.yml)}
+  - ${file(resources/dynamodb.yml)}
+  - ${file(resources/cluster-api-role.yml)}
+  - Outputs:
+      dynamodbArn:
+        Value:
+          Fn::GetAtt:
+            - EMRTable
+            - Arn
+        Export:
+          Name: ${self:service}-${self:provider.stage}-table

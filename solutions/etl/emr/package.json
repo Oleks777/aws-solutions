@@ -1,0 +1,17 @@
+{
+  "name": "emr-service",
+  "version": "0.0.1",
+  "description": "emr service built with serverless framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Oleks",
+  "license": "ISC",
+  "dependencies": {
+    "nanoid": "^3.1.30",
+    "pino": "^7.3.0",
+    "serverless-bundle": "^5.1.0",
+    "serverless-plugin-aws-alerts": "^1.7.4"
+  }
+}
